@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.db.models import Sum
 
 # 商品模型：对应实验要求的“商品目录”
 class Product(models.Model):
@@ -48,3 +51,21 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.id}"
+    
+    
+# 监听器：当 OrderItem 发生变化（保存或删除）时，自动执行 update_order_total
+@receiver(post_save, sender=OrderItem)
+@receiver(post_delete, sender=OrderItem)
+def update_order_total(sender, instance, **kwargs):
+    order = instance.order
+    # 重新计算该订单下所有条目的总价
+    # aggregate(Sum...) 会返回 {'subtotal__sum': 123.00}
+    # 注意：我们需要先在 OrderItem 里计算好单行的小计，或者直接在这里用 Quantity * Price 计算
+    
+    # 简单粗暴的方法：遍历重算
+    total = 0
+    for item in order.items.all():
+        total += item.price * item.quantity
+    
+    order.total_price = total
+    order.save()

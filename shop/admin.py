@@ -13,7 +13,7 @@ class ProductAdmin(admin.ModelAdmin):
 # 2. 注册订单模型 - 对应实验要求的“订单管理”
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    raw_id_fields = ['product']
+    extra = 0
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
