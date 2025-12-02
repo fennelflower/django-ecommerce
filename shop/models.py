@@ -52,7 +52,7 @@ class OrderItem(models.Model):
     def __str__(self):
         return f"{self.id}"
     
-    
+
 # 监听器：当 OrderItem 发生变化（保存或删除）时，自动执行 update_order_total
 @receiver(post_save, sender=OrderItem)
 @receiver(post_delete, sender=OrderItem)
@@ -69,3 +69,22 @@ def update_order_total(sender, instance, **kwargs):
     
     order.total_price = total
     order.save()
+
+
+ # === 用户行为日志模型 ===
+
+class UserLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
+    # 行为类型：浏览(View) / 购买(Buy)
+    action_type = models.CharField(max_length=10, choices=(('view', '浏览'), ('buy', '购买')), verbose_name="行为类型")
+    # 行为描述：比如 "查看了 iPhone 15"
+    description = models.CharField(max_length=255, verbose_name="行为描述")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="时间")
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action_type} - {self.timestamp}"
+
+    class Meta:
+        verbose_name = "用户日志"
+        verbose_name_plural = "客户浏览/购买日志"
+        ordering = ['-timestamp'] # 最新发生的排在前面

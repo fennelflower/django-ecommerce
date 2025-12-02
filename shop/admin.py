@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Product, Order, OrderItem
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from .models import UserLog
 
 # 1. 注册商品模型 - 对应实验要求的“商品目录管理”
 @admin.register(Product)
@@ -43,3 +44,19 @@ admin.site.unregister(User)
 
 # 用我们需要的新样式重新注册
 admin.site.register(User, UserAdmin)
+
+
+@admin.register(UserLog)
+class UserLogAdmin(admin.ModelAdmin):
+    # 列表显示哪些字段
+    list_display = ['user', 'action_type', 'description', 'timestamp']
+    # 添加右侧过滤器：按行为类型（只看购买/只看浏览）和时间筛选
+    list_filter = ['action_type', 'timestamp']
+    # 添加搜索框：搜用户名或描述
+    search_fields = ['user__username', 'description']
+    # 禁止管理员手动修改日志（日志应该是只读的证据）
+    readonly_fields = ['user', 'action_type', 'description', 'timestamp']
+    
+    # 禁用“添加”按钮（日志是系统自动生成的，人不应该手动加）
+    def has_add_permission(self, request):
+        return False

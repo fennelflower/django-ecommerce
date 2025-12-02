@@ -9,6 +9,7 @@ from django.conf import settings
 from .forms import EmailValidationForm
 from django.db.models import Sum, Count
 from django.contrib.admin.views.decorators import staff_member_required
+from .models import Product, Order, OrderItem, UserLog
 
 def product_list(request):
     # 1. 从数据库读取所有商品
@@ -23,6 +24,15 @@ def product_detail(request, pk):
     # 1. 尝试获取 ID 为 pk 的商品
     # 如果找到了，就赋值给 product；如果找不到（比如 ID=999），直接返回 404 错误页面
     product = get_object_or_404(Product, pk=pk)
+    
+    # === 新增：记录浏览日志 ===
+    # 只有登录用户才记录，防止游客刷屏（也可以去掉 if 记录所有人）
+    if request.user.is_authenticated:
+        UserLog.objects.create(
+            user=request.user,
+            action_type='view',
+            description=f"查看商品：{product.name}"
+        )
     
     # 2. 打包数据
     context = {'product': product}
@@ -167,6 +177,14 @@ def payment_success(request, order_id):
         order.status = 'paid'
         order.save()
         
+        # === 新增：记录购买日志 ===
+        UserLog.objects.create(
+            user=request.user,
+            action_type='buy',
+            description=f"成功支付订单 #{order.id}，金额 ￥{order.total_price}"
+        )
+        # ==========================
+
         # === 邮件发送逻辑移动到这里 ===
         order_items_text = "\n".join([f"{item.product.name} x {item.quantity}" for item in order.items.all()])
         
