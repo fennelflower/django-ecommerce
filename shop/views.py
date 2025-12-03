@@ -200,9 +200,14 @@ def payment_success(request, order_id):
         --------------------------
         总计: ￥{order.total_price}
         """
-        # 发送邮件
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [request.user.email or 'user@example.com'])
+       # 发送邮件 (增加容错处理)
+        try:
+            send_mail(subject, message, settings.EMAIL_HOST_USER, [request.user.email])
+        except Exception as e:
+            # 如果发送失败（比如在 PythonAnywhere 上），只打印错误，不崩溃
+            print(f"邮件发送失败: {e}")
         
+        # 无论邮件是否发送成功，都正常跳转到成功页面
         return render(request, 'shop/order_success.html', {'order': order})
     
     return redirect('product_list')
@@ -239,3 +244,23 @@ def sales_dashboard(request):
     }
     
     return render(request, 'shop/sales_dashboard.html', context)
+
+def update_cart(request, product_id, action):
+    # 获取购物车
+    cart = request.session.get('cart', {})
+    product_id = str(product_id)
+    
+    if product_id in cart:
+        if action == 'add':
+            cart[product_id] += 1 # 数量加1
+        elif action == 'minus':
+            cart[product_id] -= 1 # 数量减1
+            # 如果减到0，就直接删掉这个商品
+            if cart[product_id] <= 0:
+                del cart[product_id]
+                
+    # 保存回 Session
+    request.session['cart'] = cart
+    
+    # 刷新购物车页面
+    return redirect('cart_detail')

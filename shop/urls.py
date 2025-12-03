@@ -45,4 +45,7 @@ urlpatterns = [
 
     # 销售报表页面
     path('dashboard/', views.sales_dashboard, name='sales_dashboard'),
+
+    # 购物车数量调整 (接收两个参数：商品ID 和 动作)
+    path('cart/update/<int:product_id>/<str:action>/', views.update_cart, name='update_cart'),
 ]

@@ -49,7 +49,15 @@
                                 {{ item.product.name }}
                             </td>
                             <td>￥{{ item.product.price }}</td>
-                            <td>{{ item.quantity }}</td>
+                                <td style="min-width: 120px;">
+                                    <div class="input-group input-group-sm">
+                                        <a href="{% url 'update_cart' item.product.id 'minus' %}" class="btn btn-outline-secondary" type="button">-</a>
+                            
+                                        <input type="text" class="form-control text-center" value="{{ item.quantity }}" readonly>
+                            
+                                        <a href="{% url 'update_cart' item.product.id 'add' %}" class="btn btn-outline-secondary" type="button">+</a>
+                                    </div>
+                                </td>
                             <td class="fw-bold text-danger">￥{{ item.subtotal }}</td>
 
                             <td>
