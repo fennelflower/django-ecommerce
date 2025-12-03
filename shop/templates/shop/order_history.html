@@ -29,16 +29,26 @@
                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapse{{ order.id }}">
                         <div class="d-flex w-100 justify-content-between me-3">
-                            <span><strong>订单号 #{{ order.id }}</strong> 
-                                    <small class="text-muted">({{ order.created_at|date:"Y-m-d H:i"}})
-                                    </small>
-                            </span>
+                            <span>
                                 状态:
                                 {% if order.status == 'pending' %}
                                 <span class="badge bg-warning text-dark">待支付</span>
-                                {% else %}
-                                <span class="badge bg-success">{{ order.status }}</span>
+                                <a href="{% url 'payment' order.id %}" class="btn btn-sm btn-outline-primary ms-2">去支付</a>
+                            
+                                {% elif order.status == 'paid' %}
+                                <span class="badge bg-info text-dark">已支付(待发货)</span>
+                            
+                                {% elif order.status == 'shipped' %}
+                                <span class="badge bg-primary">发货中</span>
+                                <form action="{% url 'confirm_receipt' order.id %}" method="post" class="d-inline ms-2">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success">确认收货</button>
+                                </form>
+                            
+                                {% elif order.status == 'confirmed' %}
+                                <span class="badge bg-success">已收货</span>
                                 {% endif %}
+                            
                                 <span class="ms-3 text-danger fw-bold">￥{{ order.total_price }}</span>
                             </span>
                         </div>

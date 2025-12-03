@@ -27,10 +27,12 @@ class Order(models.Model):
     STATUS_CHOICES = (
         ('pending', '待支付'),
         ('paid', '已支付'),
-        ('shipped', '已发货'),
+        ('shipped', '发货中'),   
+        ('confirmed', '已收货'), 
     )
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="下单用户")
+    shipping_address = models.CharField(max_length=255, verbose_name="收货地址", blank=True, null=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="总价")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="订单状态")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="下单时间")

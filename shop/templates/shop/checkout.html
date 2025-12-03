@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>确认订单</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light py-5">
+    <div class="container" style="max-width: 800px;">
+        <h2 class="mb-4">填写收货信息</h2>
+
+        <div class="row">
+            <div class="col-md-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <form action="{% url 'checkout' %}" method="post" id="checkout-form">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">收货人姓名</label>
+                                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">收货地址 <span class="text-danger">*</span></label>
+                                <textarea name="address" class="form-control" rows="3"
+                                    placeholder="请输入详细地址（省/市/区/街道/门牌号）" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">联系电话</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="请输入手机号">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">订单摘要</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush mb-3">
+                            {% for item in cart_items %}
+                            <li class="list-group-item d-flex justify-content-between lh-sm">
+                                <div>
+                                    <h6 class="my-0">{{ item.product.name }}</h6>
+                                    <small class="text-muted">x {{ item.quantity }}</small>
+                                </div>
+                                <span class="text-muted">￥{{ item.subtotal }}</span>
+                            </li>
+                            {% endfor %}
+                            <li class="list-group-item d-flex justify-content-between bg-light">
+                                <span>总计 (CNY)</span>
+                                <strong>￥{{ total_price }}</strong>
+                            </li>
+                        </ul>
+
+                        <button type="submit" form="checkout-form" class="btn btn-primary w-100 btn-lg">
+                            提交订单并支付
+                        </button>
+
+                        <a href="{% url 'cart_detail' %}" class="btn btn-link w-100 mt-2">返回购物车</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

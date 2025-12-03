@@ -16,11 +16,23 @@ class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
 
+
+# 定义一个后台动作函数
+@admin.action(description='标记所选订单为已发货 (Shipped)')
+def make_shipped(modeladmin, request, queryset):
+    # 将选中的订单状态更新为 'shipped'
+    updated_count = queryset.update(status='shipped')
+    modeladmin.message_user(request, f'{updated_count} 个订单已成功发货！')
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'total_price', 'status', 'created_at']
     list_filter = ['status', 'created_at'] # 添加右侧过滤器，按状态筛选订单
     inlines = [OrderItemInline] # 在订单详情页直接显示买了哪些东西
+    list_display = ['id', 'user', 'total_price', 'status', 'shipping_address', 'created_at']
+    actions = [make_shipped]  # 注册刚才定义的动作
+
 
 # 3. 如果想单独看订单项，也可以注册（可选）
 admin.site.register(OrderItem)

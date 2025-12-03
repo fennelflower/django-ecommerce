@@ -78,10 +78,7 @@
                 </table>
 
                 <div class="d-flex justify-content-end mt-4">
-                    <form action="{% url 'checkout' %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success btn-lg">去结算 (Checkout)</button>
-                    </form>
+                    <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">去结算 (Checkout)</a>
                 </div>
 
                 {% else %}

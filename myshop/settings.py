@@ -137,6 +137,8 @@ LOGIN_REDIRECT_URL = '/'
 # 注销后跳转回首页
 LOGOUT_REDIRECT_URL = '/'
 
+LOGIN_URL = 'login'
+
 # === 真实的邮件发送配置 (QQ邮箱) ===
 
 # 1. 指定使用 SMTP 后端 (不再是 Console)

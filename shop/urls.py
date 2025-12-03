@@ -48,4 +48,7 @@ urlpatterns = [
 
     # 购物车数量调整 (接收两个参数：商品ID 和 动作)
     path('cart/update/<int:product_id>/<str:action>/', views.update_cart, name='update_cart'),
+
+    # 确认收货路由
+    path('confirm-receipt/<int:order_id>/', views.confirm_receipt, name='confirm_receipt'),
 ]

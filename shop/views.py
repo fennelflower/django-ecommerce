@@ -131,10 +131,20 @@ def checkout(request):
     if not cart:
         return redirect('product_list')
     
+    # === 如果是 POST 请求：说明用户填完地址提交了 ===
     if request.method == 'POST':
-        # 创建订单
-        order = Order.objects.create(user=request.user, status='pending')
+        # 1. 获取用户填写的地址
+        address = request.POST.get('address')
+        # (可选：你也可以获取电话 phone = request.POST.get('phone'))
         
+        # 2. 创建订单 (把地址存进去！)
+        order = Order.objects.create(
+            user=request.user, 
+            status='pending',
+            shipping_address=address  # <--- 存入数据库
+        )
+        
+        # 3. 搬运购物车商品 (这部分逻辑不变)
         total_price = 0
         for product_id, quantity in cart.items():
             product = Product.objects.get(id=product_id)
@@ -149,17 +159,29 @@ def checkout(request):
                 quantity=quantity
             )
         
-        # 更新总价
         order.total_price = total_price
         order.save()
         
-        # 清空购物车
+        # 4. 清空购物车并跳转支付
         del request.session['cart']
-        
-        # 【关键变化】下单后，不再直接成功，而是跳转到"支付页面"
         return redirect('payment', order_id=order.id)
         
-    return redirect('cart_detail')
+    # === 如果是 GET 请求：显示确认页面让用户填地址 ===
+    else:
+        # 我们需要重新算一下购物车信息给页面看
+        cart_items = []
+        total_price = 0
+        for product_id, quantity in cart.items():
+            product = Product.objects.get(id=product_id)
+            subtotal = product.price * quantity
+            total_price += subtotal
+            cart_items.append({'product': product, 'quantity': quantity, 'subtotal': subtotal})
+            
+        context = {
+            'cart_items': cart_items,
+            'total_price': total_price
+        }
+        return render(request, 'shop/checkout.html', context)
 
 # 2. 支付页面 (展示二维码，让用户确认)
 @login_required
@@ -264,3 +286,18 @@ def update_cart(request, product_id, action):
     
     # 刷新购物车页面
     return redirect('cart_detail')
+
+
+@login_required
+def confirm_receipt(request, order_id):
+    # 1. 查找订单，必须是当前用户的
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # 2. 只有状态是"发货中"的才能确认收货
+    if request.method == 'POST' and order.status == 'shipped':
+        order.status = 'confirmed'
+        order.save()
+        # (可选) 这里可以加一个 UserLog 记录日志
+        # UserLog.objects.create(user=request.user, action_type='buy', description=f"订单 #{order.id} 确认收货")
+        
+    return redirect('order_history')
